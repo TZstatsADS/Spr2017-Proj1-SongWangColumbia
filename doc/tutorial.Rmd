@@ -198,63 +198,63 @@ beeswarm(word.count~FileOrdered,
 How our presidents (or candidates) alternate between long and short sentences and how they shift between different sentiments in their speeches. It is interesting to note that some presidential candidates' speech are more colorful than others.
 
 ```{r, fig.height=2.5, fig.width=2}
-library(shiny)
-
-shinyApp(
-    ui = fluidPage(
-      fluidRow(style = "padding-bottom: 20px;",
-        column(4, selectInput('speech1', 'Speech 1',
-                              speech.list,
-                              selected=speech.list[5])),
-        column(4, selectInput('speech2', 'Speech 2', speeches,
-                              selected=speeches[9])),
-        column(4, sliderInput('nwords', 'Number of words', 3,
-                               min = 20, max = 200, value=100, step = 20))
-      ),
-      fluidRow(
-        plotOutput('wordclouds', height = "400px")
-      )
-    ),
-
-    server = function(input, output, session) {
-
-      # Combine the selected variables into a new data frame
-      selectedData <- reactive({
-        list(dtm.term1=ff.dtm$term[ff.dtm$document==as.character(input$speech1)],
-             dtm.count1=ff.dtm$count[ff.dtm$document==as.character(input$speech1)],
-             dtm.term2=ff.dtm$term[ff.dtm$document==as.character(input$speech2)],
-             dtm.count2=ff.dtm$count[ff.dtm$document==as.character(input$speech2)])
-      })
-
-      output$wordclouds <- renderPlot(height = 400, {
-        par(mfrow=c(1,2), mar = c(0, 0, 3, 0))
-        wordcloud(selectedData()$dtm.term1, 
-                  selectedData()$dtm.count1,
-              scale=c(4,0.5),
-              max.words=input$nwords,
-              min.freq=1,
-              random.order=FALSE,
-              rot.per=0,
-              use.r.layout=FALSE,
-              random.color=FALSE,
-              colors=brewer.pal(10,"Blues"), 
-            main=input$speech1)
-        wordcloud(selectedData()$dtm.term2, 
-                  selectedData()$dtm.count2,
-              scale=c(4,0.5),
-              max.words=input$nwords,
-              min.freq=1,
-              random.order=FALSE,
-              rot.per=0,
-              use.r.layout=FALSE,
-              random.color=FALSE,
-              colors=brewer.pal(10,"Blues"), 
-            main=input$speech2)
-      })
-    },
-
-    options = list(height = 600)
-)
+# library(shiny)
+# 
+# #shinyApp(
+#  #   ui = fluidPage(
+#     #  fluidRow(style = "padding-bottom: 20px;",
+#      #   column(4, selectInput('speech1', 'Speech 1',
+#       #                        speech.list,
+#        #                       selected=speech.list[5])),
+#         #column(4, selectInput('speech2', 'Speech 2', speeches,
+#          #                     selected=speeches[9])),
+#         #column(4, sliderInput('nwords', 'Number of words', 3,
+#          #                      min = 20, max = 200, value=100, step = 20))
+#       #),
+#       #fluidRow(
+#        # plotOutput('wordclouds', height = "400px")
+#       #)
+#     #),
+# 
+#    # server = function(input, output, session) {
+# #
+#  #     # Combine the selected variables into a new data frame
+#   #    selectedData <- reactive({
+#    #     list(dtm.term1=ff.dtm$term[ff.dtm$document==as.character(input$speech1)],
+#     #         dtm.count1=ff.dtm$count[ff.dtm$document==as.character(input$speech1)],
+#      #        dtm.term2=ff.dtm$term[ff.dtm$document==as.character(input$speech2)],
+#       #       dtm.count2=ff.dtm$count[ff.dtm$document==as.character(input$speech2)])
+#       })
+# 
+#       output$wordclouds <- renderPlot(height = 400, {
+#         par(mfrow=c(1,2), mar = c(0, 0, 3, 0))
+#         wordcloud(selectedData()$dtm.term1, 
+#                   selectedData()$dtm.count1,
+#               scale=c(4,0.5),
+#               max.words=input$nwords,
+#               min.freq=1,
+#               random.order=FALSE,
+#               rot.per=0,
+#               use.r.layout=FALSE,
+#               random.color=FALSE,
+#               colors=brewer.pal(10,"Blues"), 
+#             main=input$speech1)
+#         wordcloud(selectedData()$dtm.term2, 
+#                   selectedData()$dtm.count2,
+#               scale=c(4,0.5),
+#               max.words=input$nwords,
+#               min.freq=1,
+#               random.order=FALSE,
+#               rot.per=0,
+#               use.r.layout=FALSE,
+#               random.color=FALSE,
+#               colors=brewer.pal(10,"Blues"), 
+#             main=input$speech2)
+#       })
+#     },
+# 
+#     options = list(height = 600)
+# )
 par(mfrow=c(4,1), mar=c(1,0,2,0), bty="n", xaxt="n", yaxt="n", font.main=1)
 
 f.plotsent.len(In.list=sentence.list, InFile="GeorgeWBush", 
@@ -321,8 +321,8 @@ barplot(emo.means[order(emo.means)], las=2, col=col.use[order(emo.means)], horiz
 ```
 
 ```{r, fig.height=3.3, fig.width=3.7}
-presid.summary=tbl_df(sentence.list.sel)%>%
-  filter(type=="inaug", File%in%sel.comparison)%>%
+presid.summary=tbl_df(sentence.list)%>%
+  filter(type=="inaug")%>%
   #group_by(paste0(type, File))%>%
   group_by(File)%>%
   summarise(
@@ -353,7 +353,7 @@ fviz_cluster(km.res,
 For topic modeling, we prepare a corpus of sentence snipets as follows. For each speech, we start with sentences and prepare a snipet with a given sentence with the flanking sentences. 
 
 ```{r}
-sentence.list.inaug=sentence.list%>%filter(type=="inaug", File%in%sel.comparison, Term==1)
+sentence.list.inaug=sentence.list%>%filter(type=="inaug", Term==1)
 sentence.list.inaug$File=factor(sentence.list.inaug$File)
 
 sentence.list.inaug$FileOrdered=reorder(sentence.list.inaug$File, 
