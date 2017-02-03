@@ -1,5 +1,5 @@
 ---
-title: 'Tutorial (week 2) B: text mining'
+title: 'Spr2017-Proj1-SongWangColumbia'
 output:
   html_document: default
   html_notebook: default
@@ -480,7 +480,7 @@ corpus.list.df=cbind(corpus.list, topicProbabilities)
 ```{r, fig.width=3, fig.height=4}
 par(mar=c(1,1,1,1))
 topic.summary=tbl_df(corpus.list.df)%>%
-              filter(type%in%c("inaug"), File%in%sel.comparison)%>%
+              filter(type%in%c("inaug"))%>%
               select(File, Economy:Legislation)%>%
               group_by(File)%>%
               summarise_each(funs(mean))
