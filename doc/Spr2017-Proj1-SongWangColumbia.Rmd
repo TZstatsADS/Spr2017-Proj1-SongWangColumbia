@@ -70,7 +70,7 @@ inaug=inaug[-nrow(inaug),] # remove the last line, irrelevant due to error.
 inaug.list=read.csv("../data/inauglist.csv", stringsAsFactors = FALSE)
 ```
 
-I assemble all scrapped links to full text transcripts into one list. . 
+To assemble all scrapped links to full text transcripts into one list. 
 
 # Step 3: scrap the texts of speeches from the speech URLs.
 
@@ -104,11 +104,12 @@ for(i in seq(nrow(speech.list))) {
 
 # Step 4: data Processing --- generate list of sentences
 
-we apply sentiment analysis using [NRC sentiment lexion](http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm). "The NRC Emotion Lexicon is a list of English words and their associations with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive). The annotations were manually done by crowdsourcing."
+"we apply sentiment analysis using [NRC sentiment lexion](http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm). "The NRC Emotion Lexicon is a list of English words and their associations with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive). The annotations were manually done by crowdsourcing.""
 
-here I assign an sequential id to each sentence in a speech (`sent.id`) and also calculated the number of words in each sentence as *sentence length* (`word.count`).
+
 
 ```{r, message=FALSE, warning=FALSE, include=FALSE}
+#here I assign an sequential id to each sentence in a speech (`sent.id`) and also calculated the number of words in each sentence as *sentence length* (`word.count`).
 sentence.list=NULL
 for(i in 1:nrow(speech.list)){
   sentences=sent_detect(speech.list$fulltext[i],
@@ -153,7 +154,7 @@ sentence.list.Republican$FileOrdered=reorder(sentence.list.Republican$Date,
                                   mean, 
                                  order=T)
 #margin
-par(mar=c(0, 0, 0, 0))
+par(mar=c(5, 6, 3, 0))
 
 beeswarm(word.count~FileOrdered, 
          data=sentence.list.Republican,
@@ -162,10 +163,7 @@ beeswarm(word.count~FileOrdered,
          cex=0.9, cex.axis=0.8, cex.lab=0.8,
          spacing=5/nlevels(sentence.list.Republican$FileOrdered),
          las=2, ylab="", xlab="Number of words in a sentence.",
-         main="Inaugural Speeches of Republican")
-
-
-
+         main="Inaugural Speeches of RepublicanS")
 
 ```
 
@@ -177,7 +175,7 @@ sentence.list.Democratic$FileOrdered=reorder(sentence.list.Democratic$Date,
                                   sentence.list.Democratic$word.count, 
                                   mean, 
                                   order=T)
-par(mar=c(3, 3, 2, 0.5))
+par(mar=c(3, 6, 2, 0.5))
 
 beeswarm(word.count~FileOrdered, 
          data=sentence.list.Democratic,
@@ -199,64 +197,11 @@ How our presidents (or candidates) alternate between long and short sentences an
 
 #try to write a shinyapp based on the code provided by Prof Tian in Week 1-2,so that the result of sentiment analysis of any inaugural speech can be  can be choosed and dislaced.
 ```{r, fig.height=6, fig.width=12}
-# library(shiny)
-# 
-# #shinyApp(
-#  #   ui = fluidPage(
-#     #  fluidRow(style = "padding-bottom: 20px;",
-#      #   column(4, selectInput('speech1', 'Speech 1',
-#       #                        speech.list,
-#        #                       selected=speech.list[5])),
-#         #column(4, selectInput('speech2', 'Speech 2', speeches,
-#          #                     selected=speeches[9])),
-#         #column(4, sliderInput('nwords', 'Number of words', 3,
-#          #                      min = 20, max = 200, value=100, step = 20))
-#       #),
-#       #fluidRow(
-#        # plotOutput('wordclouds', height = "400px")
-#       #)
-#     #),
-# 
-#    # server = function(input, output, session) {
-# #
-#  #     # Combine the selected variables into a new data frame
-#   #    selectedData <- reactive({
-#    #     list(dtm.term1=ff.dtm$term[ff.dtm$document==as.character(input$speech1)],
-#     #         dtm.count1=ff.dtm$count[ff.dtm$document==as.character(input$speech1)],
-#      #        dtm.term2=ff.dtm$term[ff.dtm$document==as.character(input$speech2)],
-#       #       dtm.count2=ff.dtm$count[ff.dtm$document==as.character(input$speech2)])
-#       })
-# 
-#       output$wordclouds <- renderPlot(height = 400, {
-#         par(mfrow=c(1,2), mar = c(0, 0, 3, 0))
-#         wordcloud(selectedData()$dtm.term1, 
-#                   selectedData()$dtm.count1,
-#               scale=c(4,0.5),
-#               max.words=input$nwords,
-#               min.freq=1,
-#               random.order=FALSE,
-#               rot.per=0,
-#               use.r.layout=FALSE,
-#               random.color=FALSE,
-#               colors=brewer.pal(10,"Blues"), 
-#             main=input$speech1)
-#         wordcloud(selectedData()$dtm.term2, 
-#                   selectedData()$dtm.count2,
-#               scale=c(4,0.5),
-#               max.words=input$nwords,
-#               min.freq=1,
-#               random.order=FALSE,
-#               rot.per=0,
-#               use.r.layout=FALSE,
-#               random.color=FALSE,
-#               colors=brewer.pal(10,"Blues"), 
-#             main=input$speech2)
-#       })
-#     },
-# 
-#     options = list(height = 600)
-# )
+ 
 par(mfrow=c(4,1), mar=c(1,0,2,0), bty="n", xaxt="n", yaxt="n", font.main=1)
+
+f.plotsent.len(In.list=sentence.list, InFile="WilliamJClinton", 
+               InType="inaug", InTerm=1, President="William J. Clinton")
 
 f.plotsent.len(In.list=sentence.list, InFile="GeorgeWBush", 
                InType="inaug", InTerm=1, President="George W. Bush")
@@ -267,13 +212,19 @@ f.plotsent.len(In.list=sentence.list, InFile="DonaldJTrump",
 f.plotsent.len(In.list=sentence.list, InFile="BarackObama", 
                InType="inaug", InTerm=1, President="Barack Obama")
 
-f.plotsent.len(In.list=sentence.list, InFile="WilliamJClinton", 
-               InType="inaug", InTerm=1, President="William J. Clinton")
+
 ```
 
 ### What are the emotionally charged sentences?
 
 ```{r}
+print("WilliamJClinton")
+speech.df=tbl_df(sentence.list)%>%
+  filter(File=="William J. Clinton", type=="inaug", Term==1, word.count>=4)%>%
+  select(sentences, anger:trust)
+speech.df=as.data.frame(speech.df)
+as.character(speech.df$sentences[apply(speech.df[,-1], 2, which.max)])
+
 print("George W. Bush")
 speech.df=tbl_df(sentence.list)%>%
   filter(File=="GeorgeWBush", type=="inaug", word.count>=4)%>%
@@ -284,13 +235,6 @@ as.character(speech.df$sentences[apply(speech.df[,-1], 2, which.max)])
 print("Barack Obama")
 speech.df=tbl_df(sentence.list)%>%
   filter(File=="BarackObama", type=="inaug", Term==1, word.count>=5)%>%
-  select(sentences, anger:trust)
-speech.df=as.data.frame(speech.df)
-as.character(speech.df$sentences[apply(speech.df[,-1], 2, which.max)])
-
-print("WilliamJClinton")
-speech.df=tbl_df(sentence.list)%>%
-  filter(File=="William J. Clinton", type=="inaug", Term==1, word.count>=4)%>%
   select(sentences, anger:trust)
 speech.df=as.data.frame(speech.df)
 as.character(speech.df$sentences[apply(speech.df[,-1], 2, which.max)])
@@ -478,7 +422,7 @@ corpus.list.df=cbind(corpus.list, topicProbabilities)
 ```
 
 ## Clustering of topics
-```{r, fig.height=6, fig.width=12}
+```{r, fig.height=10, fig.width=12}
 par(mar=c(1,1,1,1))
 topic.summary=tbl_df(corpus.list.df)%>%
               filter(type%in%c("inaug"))%>%
@@ -574,6 +518,46 @@ fviz_cluster(km.res,
              data = presid.summary[,-1],
              show.clust.cent=FALSE)
 ```
+as we all know, there are presidents related with each other even from the same family, in the following, I explore the speech length of every family(in fact,FDR was distantly related to a total of 11 U.S. presidents, 5 by blood and 6 by marriage),here we only consider the significant relation which are not that remote.And I think the sentiments and topics of a speech is only relavant to the situation the country faced at that time
+
+It can be shown that regardless the families, the sentence length pattern is almost the same for all the presidents which is the sentence length tend to concentrate more and more on shorter sentences as time goes by.
+
+"James Madison (the 4th president) and Zachary Taylor (the 12th president) were second cousins." the sentence length distribution is seems very close to each other(sentence length of both are quite evenly distributed),this can show the influence of the family on the writing and talking style.
+The same similarity can be found from the speeches of WilliamHenryHarrison and BenjaminHarrison,"Benjamin Harrison (the 23rd president) was the grandson of William Henry Harrison (the 9th president)."though their inauguration time is 48 years apart,they clearly shows an a pattern that how sentence length evolved to be shorter.But this trend is more obvious than their comtemporaries, from which we can interpret the same pattern of "noise" is a result of family education.
+
+It is interesting to see in the case of TheodoreRoosevelt and FranklinDRoosevelt's inauguration speeches, although they are comtemporaries-in fact,"Franklin Delano Roosevelt (the 32nd president) was a fifth cousin of Theodore Roosevelt (the 26th president)."there is a clearly difference shows Franklin D. Roosevelt tend to use much more short sentences than his cousin, this can be explained by the fact that when FDR was serving as President The USA was in the Great Dpression, the leader of this country needed to show confidence to the public,and usually shorter sentences can give us an impression of potent and determined. 
+
+
+```{r}
+#firstly we select the president from the same family by time from the nearest to most remote(presidents who are related per line)
+president_family =c("GeorgeBush","GeorgeWBush",
+#                 "HillaryClinton", "WilliamJClinton",
+                 "FranklinDRoosevelt","TheodoreRoosevelt",
+                 "BenjaminHarrison","WilliamHenryHarrison",
+                 "JamesMadison","ZacharyTaylor",
+                 "JohnQuincyAdams","JohnAdams")
+par(mar=c(4, 8, 2, 2))
+
+sentence.list.family=filter(sentence.list, 
+                        type=="inaug", Term==1, File%in%president_family)
+sentence.list.family$File=factor(sentence.list.family$File)
+
+sentence.list.family$FileOrdered=reorder(sentence.list.family$File, 
+                                  sentence.list.family$word.count, 
+                                  mean, 
+                                  order=T)
+
+beeswarm(word.count~FileOrdered, 
+         data=sentence.list.family,
+         horizontal = TRUE, 
+         pch=16, col=alpha(brewer.pal(9, "Set1"), 0.6), 
+         cex=0.55, cex.axis=0.8, cex.lab=0.8,
+         spacing=5/nlevels(sentence.list.family$FileOrdered),
+         las=2, xlab="Number of words in a sentence.", ylab="",
+         main="Inaugural speeches for presidents who are related")
+            
+```
+
 # Further readings
 
 + [Text mining and word cloud fundamentals in R : 5 simple steps you should know](http://www.sthda.com/english/wiki/text-mining-and-word-cloud-fundamentals-in-r-5-simple-steps-you-should-know).
@@ -583,3 +567,5 @@ fviz_cluster(km.res,
 + [Jerid Francom](http://francojc.github.io/web-scraping-with-rvest/).
 + [NRC sentiment lexion](http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm).
 + [par(mar, mgp, las)](http://rfunction.com/archives/1302).
++ [U.S. Presidents Who Were Related to Each Other](http://www.factmonster.com/ipka/A0878156.html).
++ [John Quincy Adams](https://en.wikipedia.org/wiki/John_Quincy_Adams).
