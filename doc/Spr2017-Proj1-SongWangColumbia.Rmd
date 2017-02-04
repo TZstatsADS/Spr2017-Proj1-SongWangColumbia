@@ -7,7 +7,7 @@ output:
 
 # Step 0: check and install needed packages. Load the libraries and functions. 
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, include=FALSE}
 packages.used=c("rvest", "tibble", "qdap", 
                 "sentimentr", "gplots", "dplyr",
                 "tm", "syuzhet", "factoextra", 
@@ -45,46 +45,45 @@ source("../lib/speechFuncs.R")
 ```
 This notebook was prepared with the following environmental settings.
 
-```{r}
+```{r, warning=FALSE, include=FALSE}
 print(R.version)
 ```
 
 # Step 1: Data harvest: scrap speech URLs from <http://www.presidency.ucsb.edu/>.
 
-Following the example of [Jerid Francom](http://francojc.github.io/web-scraping-with-rvest/), we used [Selectorgadget](http://selectorgadget.com/) to choose the links we would like to scrap. For this project, we selected all inaugural addresses of past presidents
+For this project, we selected all inaugural addresses of past presidents
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, include=FALSE}
 ### Inauguaral speeches
 main.page <- read_html(x = "http://www.presidency.ucsb.edu/inaugurals.php")
-# Get link URLs
-# f.speechlinks is a function for extracting links from the list of speeches. 
+# Get link URLs. f.speechlinks is a function for extracting links from the list of speeches. 
 inaug=f.speechlinks(main.page)
-#head(inaug)
+
 as.Date(inaug[,1], format="%B %e, %Y")
 inaug=inaug[-nrow(inaug),] # remove the last line, irrelevant due to error.
 
 ```
 
-# Step 2: Using speech metadata posted on <http://www.presidency.ucsb.edu/>, we prepared CSV data sets for the speeches we will scrap. 
+# Step 2: Using speech metadata posted on <http://www.presidency.ucsb.edu/>, I use CSV data sets provided by Prof Tian for the speeches we will scrap. 
 
-```{r}
+```{r, include=FALSE}
 inaug.list=read.csv("../data/inauglist.csv", stringsAsFactors = FALSE)
 ```
 
-We assemble all scrapped speeches into one list. Note here that we don't have the full text yet, only the links to full text transcripts. 
+I assemble all scrapped links to full text transcripts into one list. . 
 
 # Step 3: scrap the texts of speeches from the speech URLs.
 
-```{r}
+```{r, include=FALSE}
 speech.list=rbind(inaug.list)
 speech.list$type=c(rep("inaug", nrow(inaug.list)))
 speech.url=rbind(inaug)
 speech.list=cbind(speech.list, speech.url)
 ```
 
-Based on the list of speeches, we scrap the main text part of the transcript's html page. For simple html pages of this kind,  [Selectorgadget](http://selectorgadget.com/) is very convenient for identifying the html node that `rvest` can use to scrap its content. For reproducibility, we also save our scrapped speeches into our local folder as individual speech files. 
+Based on the list of speeches, I scrap the main text part of the transcript's html page. For reproducibility, I also save our scrapped speeches into our local folder as individual speech files. 
 
-```{r}
+```{r, include=FALSE}
 # Loop over each row in speech.list
 speech.list$fulltext=NA
 for(i in seq(nrow(speech.list))) {
@@ -107,9 +106,9 @@ for(i in seq(nrow(speech.list))) {
 
 we apply sentiment analysis using [NRC sentiment lexion](http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm). "The NRC Emotion Lexicon is a list of English words and their associations with eight basic emotions (anger, fear, anticipation, trust, surprise, sadness, joy, and disgust) and two sentiments (negative and positive). The annotations were manually done by crowdsourcing."
 
-We assign an sequential id to each sentence in a speech (`sent.id`) and also calculated the number of words in each sentence as *sentence length* (`word.count`).
+here I assign an sequential id to each sentence in a speech (`sent.id`) and also calculated the number of words in each sentence as *sentence length* (`word.count`).
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, include=FALSE}
 sentence.list=NULL
 for(i in 1:nrow(speech.list)){
   sentences=sent_detect(speech.list$fulltext[i],
@@ -133,7 +132,7 @@ for(i in 1:nrow(speech.list)){
 ```
 
 Some non-sentences exist in raw data due to erroneous extra end-of sentence marks. 
-```{r}
+```{r, warning=FALSE, include=FALSE}
 sentence.list=
   sentence.list%>%
   filter(!is.na(word.count)) 
@@ -146,20 +145,21 @@ sentence.list=
 
 ## sentence length distribution of each party
 It is quite clearly that,for both parties,they tend to use shorter sentences compared with the early times,and the sentence length distribution of a certain speech behave more and more like a Spindly as time goes by.for the Republicans the mass concentrated on the middle length is more obviously than the democratics.
-```{r, fig.width = 3, fig.height = 3}
+```{r, fig.height=6, fig.width=12}
 sentence.list.Republican=sentence.list%>%filter(type=="inaug",Party=="Republican")
 sentence.list.Republican$File=factor(sentence.list.Republican$Date)
 sentence.list.Republican$FileOrdered=reorder(sentence.list.Republican$Date, 
                                   sentence.list.Republican$word.count, 
                                   mean, 
-                                  order=T)
-par(mar=c(3, 3, 2, 0.5))
+                                 order=T)
+#margin
+par(mar=c(0, 0, 0, 0))
 
 beeswarm(word.count~FileOrdered, 
          data=sentence.list.Republican,
          horizontal = TRUE,
          pch=16, col=alpha(brewer.pal(9, "Set1"), 0.6), 
-         cex=0.55, cex.axis=0.8, cex.lab=0.8,
+         cex=0.9, cex.axis=0.8, cex.lab=0.8,
          spacing=5/nlevels(sentence.list.Republican$FileOrdered),
          las=2, ylab="", xlab="Number of words in a sentence.",
          main="Inaugural Speeches of Republican")
@@ -169,7 +169,7 @@ beeswarm(word.count~FileOrdered,
 
 ```
 
-```{r, fig.width = 3, fig.height = 3}
+```{r, fig.height=6, fig.width=12}
 
 sentence.list.Democratic=sentence.list%>%filter(type=="inaug",Party=="Democratic")
 sentence.list.Democratic$File=factor(sentence.list.Democratic$Date)
@@ -183,7 +183,7 @@ beeswarm(word.count~FileOrdered,
          data=sentence.list.Democratic,
          horizontal = TRUE,
          pch=16, col=alpha(brewer.pal(9, "Set1"), 0.6), 
-         cex=0.55, cex.axis=0.8, cex.lab=0.8,
+         cex=0.9, cex.axis=0.8, cex.lab=0.8,
          spacing=5/nlevels(sentence.list.Democratic$FileOrdered),
          las=2, ylab="", xlab="Number of words in a sentence.",
          main="Inaugural Speeches of Democratic")
@@ -197,7 +197,8 @@ beeswarm(word.count~FileOrdered,
 
 How our presidents (or candidates) alternate between long and short sentences and how they shift between different sentiments in their speeches. It is interesting to note that some presidential candidates' speech are more colorful than others.
 
-```{r, fig.height=2.5, fig.width=2}
+#try to write a shinyapp based on the code provided by Prof Tian in Week 1-2,so that the result of sentiment analysis of any inaugural speech can be  can be choosed and dislaced.
+```{r, fig.height=6, fig.width=12}
 # library(shiny)
 # 
 # #shinyApp(
@@ -305,7 +306,7 @@ as.character(speech.df$sentences[apply(speech.df[,-1], 2, which.max)])
 
 
 ## Clustering of emotions
-```{r, fig.width=2, fig.height=2}
+```{r, fig.height=6, fig.width=12}
 heatmap.2(cor(sentence.list%>%filter(type=="inaug")%>%select(anger:trust)), 
           scale = "none", 
           col = bluered(100), , margin=c(6, 6), key=F,
@@ -320,7 +321,7 @@ col.use=c("red2", "darkgoldenrod1",
 barplot(emo.means[order(emo.means)], las=2, col=col.use[order(emo.means)], horiz=T, main="Inaugural Speeches")
 ```
 
-```{r, fig.height=3.3, fig.width=3.7}
+```{r, fig.height=6, fig.width=12}
 presid.summary=tbl_df(sentence.list)%>%
   filter(type=="inaug")%>%
   #group_by(paste0(type, File))%>%
@@ -465,7 +466,7 @@ topics.terms
 ldaOut.terms
 ```
 
-Based on the most popular terms and the most salient terms for each topic, we assign a hashtag to each topic. This part require manual setup as the topics are likely to change. 
+Based on the most popular terms and the most salient terms for each topic, we assign a hashtag to each topic. (This part require manual setup as the topics are likely to change. )
 
 ```{r}
 topics.hash=c("Economy", "America", "Defense", "Belief", "Election", "Patriotism", "Unity", "Government", "Reform", "Temporal", "WorkingFamilies", "Freedom", "Equality", "Misc", "Legislation")
@@ -477,7 +478,7 @@ corpus.list.df=cbind(corpus.list, topicProbabilities)
 ```
 
 ## Clustering of topics
-```{r, fig.width=3, fig.height=4}
+```{r, fig.height=6, fig.width=12}
 par(mar=c(1,1,1,1))
 topic.summary=tbl_df(corpus.list.df)%>%
               filter(type%in%c("inaug"))%>%
@@ -559,7 +560,7 @@ names(speech.df)[-1]
 
 ```{r, fig.width=3, fig.height=3}
 presid.summary=tbl_df(corpus.list.df)%>%
-  filter(type=="inaug", File%in%sel.comparison)%>%
+  filter(type=="inaug")%>%
   select(File, Economy:Legislation)%>%
   group_by(File)%>%
   summarise_each(funs(mean))
@@ -573,3 +574,12 @@ fviz_cluster(km.res,
              data = presid.summary[,-1],
              show.clust.cent=FALSE)
 ```
+# Further readings
+
++ [Text mining and word cloud fundamentals in R : 5 simple steps you should know](http://www.sthda.com/english/wiki/text-mining-and-word-cloud-fundamentals-in-r-5-simple-steps-you-should-know).
++ [Text mining with `tidytext`](http://tidytextmining.com/).
++ [Basic Text Mining in R](https://rstudio-pubs-static.s3.amazonaws.com/31867_8236987cf0a8444e962ccd2aec46d9c3.html)
++ [Selectorgadget](http://selectorgadget.com/).
++ [Jerid Francom](http://francojc.github.io/web-scraping-with-rvest/).
++ [NRC sentiment lexion](http://saifmohammad.com/WebPages/NRC-Emotion-Lexicon.htm).
++ [par(mar, mgp, las)](http://rfunction.com/archives/1302).
